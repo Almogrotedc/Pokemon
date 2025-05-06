@@ -265,7 +265,36 @@ insert into combates VALUES ('66','6243253');
 insert into combates VALUES ('77','4166568');
 insert into combates VALUES ('88','5789206');
 
-
+DELIMITER //
+CREATE PROCEDURE registrar_nuevo_pokemon(
+    IN p_id INT,
+    IN p_dni_entrenador INT,
+    IN p_descripcion VARCHAR(50),
+    IN p_nombre VARCHAR(25),
+    IN p_tipo_id INT
+)
+BEGIN
+    DECLARE entrenador_existe INT;
+    
+    -- Verificar si el entrenador existe
+    SELECT COUNT(*) INTO entrenador_existe FROM entrenador WHERE DNI = p_dni_entrenador;
+    
+    IF entrenador_existe = 0 THEN
+        SELECT 'Error: El entrenador no existe' AS mensaje;
+    ELSE
+        -- Insertar Pokémon
+        INSERT INTO pokemon VALUES (p_id, p_dni_entrenador, p_descripcion, p_nombre);
+        
+        -- Asignar tipo si existe
+        IF EXISTS (SELECT 1 FROM tipo WHERE id_tipo = p_tipo_id) THEN
+            INSERT INTO pertenecen_tipo VALUES (p_id, p_tipo_id);
+            SELECT CONCAT('Pokémon ', p_nombre, ' registrado exitosamente con tipo asignado') AS mensaje;
+        ELSE
+            SELECT CONCAT('Pokémon ', p_nombre, ' registrado pero sin tipo asignado (tipo no válido)') AS mensaje;
+        END IF;
+    END IF;
+END //
+DELIMITER ;
 
 
 
